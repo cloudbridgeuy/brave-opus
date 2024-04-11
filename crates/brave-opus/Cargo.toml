@@ -1,0 +1,25 @@
+[package]
+name = "brave-opus"
+version = "0.1.0"
+homepage = "https://github.com/cloudbridgeuy/brave-opus"
+documentation = "https://github.com/cloudbridgeuy/brave-opus/README.md"
+autobins = false
+
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "brave-opus"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive", "env"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+color-eyre = "0.6.3"
+tokio = { version = "1.37.0", features = ["full"] }
+env_logger = "0.11.3"
+log = "0.4.21"
+ctrlc = { version = "3.4.4", features = ["termination"] }
