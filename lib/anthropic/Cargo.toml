@@ -1,0 +1,20 @@
+[package]
+name = "anthropic"
+version = "0.1.0"
+description = "A very simple Rust library for Anthropic's Claude API, free from complex async operations and redundant dependencies."
+license = "MIT"
+repository = "https://github.com/cloudbridgeuy/brave-opus"
+edition = "2021"
+keywords = ["anthropic", "api", "llm", "claude", "api-bindings"]
+
+[dependencies]
+ureq = { version = "^2.6", features = ["json"] }
+serde = { version = "^1.0", features = ["derive"] }
+serde_json = "^1.0"
+log = "^0.4"
+env_logger = "0.11.3"
+multipart = "^0.18.0"
+mime = "^0.3.16"
+futures = "0.3.27"
+tokio = { version = "1.37.0", features = ["full"] }
+eventsource-client = "0.12.2"
