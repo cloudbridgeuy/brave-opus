@@ -9,7 +9,7 @@ pub enum Error {
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Error::*;
+        use Error::{SseStreamCreation, SseStreamError};
 
         match self {
             SseStreamCreation(err) => write!(f, "sse stream creation error: {err}"),
@@ -20,7 +20,7 @@ impl std::fmt::Display for Error {
 
 impl From<es::Error> for Error {
     fn from(error: es::Error) -> Self {
-        Error::SseStreamError(Box::new(error))
+        Self::SseStreamError(Box::new(error))
     }
 }
 

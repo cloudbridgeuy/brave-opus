@@ -14,7 +14,7 @@ impl Clone for Auth {
 }
 
 impl Auth {
-    pub fn new(api_key: &str) -> Self {
+    #[must_use] pub fn new(api_key: &str) -> Self {
         Self { api_key: api_key.to_string(), version: None }
     }
 
@@ -40,7 +40,7 @@ impl Clone for Anthropic {
 }
 
 impl Anthropic {
-    pub fn new(auth: Auth, api_url: &str) -> Self {
+    #[must_use] pub fn new(auth: Auth, api_url: &str) -> Self {
         Self { auth, api_url: api_url.to_string(), agent: AgentBuilder::new().build() }
     }
 }

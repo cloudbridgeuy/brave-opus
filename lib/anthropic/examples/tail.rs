@@ -8,7 +8,7 @@ pub struct Streamer {
 }
 
 impl Streamer {
-    pub fn new(api_url: String) -> Self {
+    #[must_use] pub fn new(api_url: String) -> Self {
         Self { api_url }
     }
 
@@ -65,7 +65,7 @@ async fn main() -> Result<(), es::Error> {
     let mut stream = streamer.stream("messages")?;
 
     while let Ok(Some(event)) = stream.try_next().await {
-        println!("{:?}", event);
+        println!("{event:?}");
     }
 
     Ok(())

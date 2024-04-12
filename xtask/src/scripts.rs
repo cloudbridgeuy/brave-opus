@@ -8,7 +8,7 @@ pub fn run(args: &cli::RunArgs) -> Result<(), Box<dyn Error>> {
     let mut arguments = vec!["run", "--bin", &args.name];
 
     match &args.args {
-        Some(args) => arguments.extend(args.iter().map(|s| s.as_str())),
+        Some(args) => arguments.extend(args.iter().map(std::string::String::as_str)),
         None => {}
     }
 

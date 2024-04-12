@@ -10,6 +10,6 @@ pub struct Cli {
 }
 
 pub async fn execute(cli: Cli) -> Result<()> {
-    println!("{:?}", cli);
+    println!("{cli:?}");
     Ok(())
 }

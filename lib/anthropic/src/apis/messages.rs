@@ -7,7 +7,7 @@ use futures::stream::{Stream, StreamExt};
 use std::collections::HashMap;
 
 use crate::requests::Requests;
-use crate::*;
+use crate::{Anthropic, ApiResult, Content, Message, Usage, error};
 use serde::{Deserialize, Serialize};
 
 use super::MESSAGES_CREATE;
@@ -96,7 +96,7 @@ impl MessageApi for Anthropic {
     fn message_create(&self, message_body: &MessageBody) -> ApiResult<MessageResponse> {
         let request_body = serde_json::to_value(message_body).unwrap();
         let res = self.post(MESSAGES_CREATE, request_body)?;
-        let response: MessageResponse = serde_json::from_value(res.clone()).unwrap();
+        let response: MessageResponse = serde_json::from_value(res).unwrap();
         Ok(response)
     }
 
@@ -111,7 +111,7 @@ impl MessageApi for Anthropic {
 
         // Assuming you have From or Into traits implemented for conversions
         let mapped_stream = original_stream.map(|item| {
-            item.map_err(|e| error::Error::from(e))
+            item.map_err(error::Error::from)
             // item.map(|sse| anthropic::SSE::from(sse)).map_err(|e| error::Error::from(e))
         });
 
