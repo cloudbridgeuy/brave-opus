@@ -25,11 +25,21 @@ pub enum Error {
     ApiError(String),
     /// An Error not related to the API
     RequestError(String),
+    /// An Error occurred when serializing an object.
+    SerializeError(serde_json::error::Error),
+    /// An Error occurred when deserializing an object.
+    DeserializeError(serde_json::error::Error),
+    /// An Error occurred when deserializing an object from JSON.
+    DeserializeIntoJson(std::io::Error),
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Error::{ApiError, Eof, InvalidEvent, InvalidLine, InvalidParameter, RequestError, SseStreamCreation, StreamClosed, TimedOut, UnexpectedEof, Unknown};
+        use Error::{
+            ApiError, DeserializeError, DeserializeIntoJson, Eof, InvalidEvent, InvalidLine,
+            InvalidParameter, RequestError, SerializeError, SseStreamCreation, StreamClosed,
+            TimedOut, UnexpectedEof, Unknown,
+        };
 
         match self {
             TimedOut => write!(f, "timed out"),
@@ -43,6 +53,9 @@ impl std::fmt::Display for Error {
             Unknown(err) => write!(f, "sse stream error: {err}"),
             ApiError(s) => write!(f, "API Error: {s}"),
             RequestError(s) => write!(f, "Request Error: {s}"),
+            SerializeError(err) => write!(f, "serialize error: {err}"),
+            DeserializeError(err) => write!(f, "deserialize error: {err}"),
+            DeserializeIntoJson(err) => write!(f, "deserialize into error: {err}"),
         }
     }
 }

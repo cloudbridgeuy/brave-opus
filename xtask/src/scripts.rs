@@ -1,3 +1,4 @@
+#![allow(clippy::cognitive_complexity)]
 use crate::cli;
 use crate::utils;
 use bunt::println;
@@ -30,10 +31,7 @@ pub fn build(args: &cli::BuildArgs) -> Result<(), Box<dyn Error>> {
 }
 
 fn release(name: &str) -> Result<(), Box<dyn Error>> {
-    let buid_args = cli::BuildArgs {
-        name: name.to_string(),
-        release: true,
-    };
+    let buid_args = cli::BuildArgs { name: name.to_string(), release: true };
 
     build(&buid_args)?;
 
@@ -76,19 +74,8 @@ pub fn github(args: &cli::GithubArgs) -> Result<(), Box<dyn Error>> {
     cmd!("git", "push", "origin", &version).run()?;
     println!("{$magenta}Creating {[yellow]} release{/$}", &version);
     cmd!("gh", "release", "create", &version, "--title", &version, "--notes", &notes).run()?;
-    println!(
-        "{$magenta}Uploading {[yellow]} release binary{/$}",
-        &version
-    );
-    cmd!(
-        "gh",
-        "release",
-        "upload",
-        &version,
-        &target_path,
-        "--clobber"
-    )
-    .run()?;
+    println!("{$magenta}Uploading {[yellow]} release binary{/$}", &version);
+    cmd!("gh", "release", "upload", &version, &target_path, "--clobber").run()?;
 
     Ok(())
 }

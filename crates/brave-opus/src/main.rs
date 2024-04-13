@@ -1,3 +1,4 @@
+#![allow(clippy::empty_line_after_outer_attr)]
 mod run;
 
 use clap::{Parser, Subcommand};
@@ -38,15 +39,18 @@ async fn main() -> color_eyre::eyre::Result<()> {
         std::process::exit(1);
     })?;
 
-    run().await
+    run();
+    Ok(())
 }
 
-async fn run() -> color_eyre::eyre::Result<()> {
+fn run() {
     log::debug!("Parsing CLI arguments");
     let cli = Cli::parse();
 
     log::debug!("Running command");
     match cli.command {
-        Commands::Run(cli) => crate::run::execute(cli).await,
+        Commands::Run(cli) => {
+            crate::run::execute(&cli);
+        }
     }
 }

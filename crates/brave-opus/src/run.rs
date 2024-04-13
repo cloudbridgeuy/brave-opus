@@ -1,5 +1,5 @@
 use clap::Parser;
-use color_eyre::eyre::Result;
+
 
 #[derive(Debug, Parser)]
 #[command(name = "run")]
@@ -9,7 +9,6 @@ pub struct Cli {
     prompt: String,
 }
 
-pub async fn execute(cli: Cli) -> Result<()> {
+pub fn execute(cli: &Cli) {
     println!("{cli:?}");
-    Ok(())
 }

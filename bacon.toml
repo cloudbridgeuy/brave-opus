@@ -17,21 +17,34 @@ need_stdout = false
 
 [jobs.clippy]
 command = [
-    "cargo", "clippy", "--fix",
+    "cargo",
+    "clippy",
+    "--fix",
     "--all-targets",
-    "--color", "always",
+    "--allow-dirty",
+    "--color",
+    "always",
     "--",
-    "-W", "clippy::pedantic",
-    "-W", "clippy::nursery",
-    "-W", "clippy::unwrap_used",
-    "-W", "clippy::expect_used",
+    "-W",
+    "clippy::pedantic",
+    "-W",
+    "clippy::nursery",
+    "-W",
+    "clippy::unwrap_used",
+    "-W",
+    "clippy::expect_used",
 ]
 need_stdout = false
 
 [jobs.test]
 command = [
-    "cargo", "test", "--color", "always",
-    "--", "--color", "always", # see https://github.com/Canop/bacon/issues/124
+    "cargo",
+    "test",
+    "--color",
+    "always",
+    "--",
+    "--color",
+    "always",  # see https://github.com/Canop/bacon/issues/124
 ]
 need_stdout = true
 
@@ -44,7 +57,7 @@ need_stdout = false
 [jobs.doc-open]
 command = ["cargo", "doc", "--color", "always", "--no-deps", "--open"]
 need_stdout = false
-on_success = "back" # so that we don't open the browser at each change
+on_success = "back"                                                    # so that we don't open the browser at each change
 
 # You can run your application and have the result displayed in bacon,
 # *if* it makes sense for this crate. You can run an example the same
@@ -52,8 +65,10 @@ on_success = "back" # so that we don't open the browser at each change
 # properly parsed.
 [jobs.run]
 command = [
-    "cargo", "run",
-    "--color", "always",
+    "cargo",
+    "run",
+    "--color",
+    "always",
     # put launch parameters for your program behind a `--` separator
 ]
 need_stdout = true

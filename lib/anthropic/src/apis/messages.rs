@@ -44,6 +44,22 @@ pub struct MessageBody {
     pub top_p: Option<f32>,
 }
 
+impl MessageBody {
+    /// Creates a new `MessageBody`
+    #[must_use]
+    pub fn new(model: &str, messages: Vec<Message>, max_tokens: i32) -> Self {
+        Self { model: model.into(), messages, max_tokens, ..Default::default() }
+    }
+
+    /// Creates a new streaming `MessageBody`
+    #[must_use]
+    pub fn with_stream(model: &str, messages: Vec<Message>, max_tokens: i32) -> Self {
+        let mut s = Self::new(model, messages, max_tokens);
+        s.stream = Some(true);
+        s
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MessageResponse {
     /// Unique object identifier.
@@ -128,22 +144,32 @@ pub struct MessageEvent {
 }
 
 impl MessageEvent {
-    #[must_use] pub fn new(r#type: MessageEventType) -> Self {
+    #[must_use]
+    pub fn new(r#type: MessageEventType) -> Self {
         Self { r#type, ..Default::default() }
     }
 
-    #[must_use] pub fn with_comment(comment: String) -> Self {
+    #[must_use]
+    pub fn with_comment(comment: String) -> Self {
         Self { r#type: MessageEventType::Comment, comment: Some(comment), ..Default::default() }
     }
 }
 
 pub trait MessageApi {
-    /// Create a Message
+    /// # Errors
+    ///
+    /// Will return `Err` if the POST request fails for some reason.
     fn message_create(&self, message_body: &MessageBody) -> ApiResult<MessageResponse>;
+    /// # Errors
+    ///
+    /// Will return `Err` if the POST request that begins the stream fails for some reason.
     fn message_stream(
         &self,
         message_body: &MessageBody,
     ) -> Result<impl Stream<Item = Result<MessageEvent, error::Error>>, error::Error>;
+    /// # Errors
+    ///
+    /// Will return `Err` if the POST request that begins the stream fails for some reason.
     fn message_delta_stream(
         &self,
         message_body: &MessageBody,
@@ -152,9 +178,11 @@ pub trait MessageApi {
 
 impl MessageApi for Anthropic {
     fn message_create(&self, message_body: &MessageBody) -> ApiResult<MessageResponse> {
-        let request_body = serde_json::to_value(message_body).unwrap();
+        let request_body =
+            serde_json::to_value(message_body).map_err(error::Error::SerializeError)?;
         let res = self.post(MESSAGES_CREATE, request_body)?;
-        let response: MessageResponse = serde_json::from_value(res).unwrap();
+        let response: MessageResponse =
+            serde_json::from_value(res).map_err(error::Error::DeserializeError)?;
         Ok(response)
     }
 
@@ -164,7 +192,8 @@ impl MessageApi for Anthropic {
     ) -> Result<impl Stream<Item = Result<MessageEvent, error::Error>>, error::Error> {
         log::debug!("message_body: {:#?}", message_body);
 
-        let request_body = serde_json::to_value(message_body).unwrap();
+        let request_body =
+            serde_json::to_value(message_body).map_err(error::Error::SerializeError)?;
         log::debug!("request_body: {:#?}", request_body);
 
         let original_stream = self.stream(MESSAGES_CREATE, request_body).map_err(|e| {
@@ -198,7 +227,8 @@ impl MessageApi for Anthropic {
     ) -> Result<impl Stream<Item = Result<String, error::Error>>, error::Error> {
         log::debug!("message_body: {:#?}", message_body);
 
-        let request_body = serde_json::to_value(message_body).unwrap();
+        let request_body =
+            serde_json::to_value(message_body).map_err(error::Error::SerializeError)?;
         log::debug!("request_body: {:#?}", request_body);
 
         let original_stream = self.stream(MESSAGES_CREATE, request_body).map_err(|e| {
@@ -212,27 +242,23 @@ impl MessageApi for Anthropic {
                     Ok(ev) => {
                         if matches!(ev.r#type, MessageEventType::ContentBlockDelta) {
                             if let Some(delta) = ev.delta {
-                                if let Some(text) = delta.text {
-                                    text
-                                } else {
-                                    Default::default()
-                                }
+                                delta.text.map_or_else(String::default, |text| text)
                             } else {
-                                Default::default()
+                                String::default()
                             }
                         } else {
-                            Default::default()
+                            String::default()
                         }
                     }
                     Err(e) => {
                         log::error!("Error parsing event: {:#?}", ev);
                         log::error!("Error: {:#?}", e);
-                        Default::default()
+                        String::default()
                     }
                 },
                 es::SSE::Comment(comment) => {
                     log::debug!("Comment: {:#?}", comment);
-                    Default::default()
+                    String::default()
                 }
             })
             .map_err(error::Error::from)

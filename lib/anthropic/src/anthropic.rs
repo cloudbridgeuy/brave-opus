@@ -14,10 +14,14 @@ impl Clone for Auth {
 }
 
 impl Auth {
-    #[must_use] pub fn new(api_key: &str) -> Self {
+    #[must_use]
+    pub fn new(api_key: &str) -> Self {
         Self { api_key: api_key.to_string(), version: None }
     }
 
+    /// # Errors
+    ///
+    /// Will return `Err` if the environment variable `ANTHROPIC_API_KEY` is not defined.
     pub fn from_env() -> Result<Self, String> {
         let api_key = std::env::var("ANTHROPIC_API_KEY")
             .map_err(|_| "Missing ANTHROPIC_API_KEY".to_string())?;
@@ -40,7 +44,8 @@ impl Clone for Anthropic {
 }
 
 impl Anthropic {
-    #[must_use] pub fn new(auth: Auth, api_url: &str) -> Self {
+    #[must_use]
+    pub fn new(auth: Auth, api_url: &str) -> Self {
         Self { auth, api_url: api_url.to_string(), agent: AgentBuilder::new().build() }
     }
 }

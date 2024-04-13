@@ -1,3 +1,4 @@
+#![allow(clippy::missing_errors_doc)]
 use futures::stream::{Stream, TryStreamExt};
 use std::time::Duration;
 
@@ -9,7 +10,7 @@ pub struct Streamer {
 
 impl Streamer {
     #[must_use]
-    pub fn new(api_url: String) -> Self {
+    const fn new(api_url: String) -> Self {
         Self { api_url }
     }
 
@@ -51,12 +52,12 @@ impl Streamer {
             )
             .build();
 
-        Ok(self.tail(client))
+        Ok(tail(&client))
     }
+}
 
-    fn tail(&self, client: impl es::Client) -> impl Stream<Item = Result<es::SSE, es::Error>> {
-        client.stream()
-    }
+fn tail(client: &impl es::Client) -> impl Stream<Item = Result<es::SSE, es::Error>> {
+    client.stream()
 }
 
 #[tokio::main]

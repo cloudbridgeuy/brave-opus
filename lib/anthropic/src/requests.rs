@@ -3,6 +3,7 @@ use futures::stream::Stream;
 use std::time::Duration;
 
 use crate::anthropic::Anthropic;
+use crate::error;
 use crate::{error::Error, ApiResult, Json};
 
 #[cfg(not(test))]
@@ -12,7 +13,19 @@ use log::{debug, error, info};
 use std::{eprintln as error, println as info, println as debug};
 
 pub trait Requests {
+    /// # Errors
+    ///
+    /// Will return `Err` if the POST request fails, or we are unable to deserialize the response.
     fn post(&self, sub_url: &str, body: Json) -> ApiResult<Json>;
+    /// # Errors
+    ///
+    /// Will return `Err` if:
+    ///
+    /// - The headers can't be loaded to the request.
+    /// - The body can't be loaded to the request.
+    /// - The POST request to start the stream fails.
+    /// - The stream connection fails to reconnect.
+    /// - A stream can't be created.
     fn stream(
         &self,
         sub_url: &str,
@@ -56,20 +69,21 @@ impl Requests for Anthropic {
             )
             .build();
 
-        Ok(tail(client))
+        Ok(tail(&client))
     }
 }
 
 fn deal_response(response: Result<ureq::Response, ureq::Error>, sub_url: &str) -> ApiResult<Json> {
     match response {
         Ok(resp) => {
-            let json = resp.into_json::<Json>().unwrap();
+            let json = resp.into_json::<Json>().map_err(error::Error::DeserializeIntoJson)?;
             debug!("<== ✔️\n\tDone api: {sub_url}, resp: {json}");
             Ok(json)
         }
         Err(err) => match err {
             ureq::Error::Status(status, response) => {
-                let error_msg = response.into_json::<Json>().unwrap();
+                let error_msg =
+                    response.into_json::<Json>().map_err(error::Error::DeserializeIntoJson)?;
                 error!("<== ❌\n\tError api: {sub_url}, status: {status}, error: {error_msg}");
                 Err(Error::ApiError(format!("{error_msg}")))
             }
@@ -81,6 +95,6 @@ fn deal_response(response: Result<ureq::Response, ureq::Error>, sub_url: &str) -
     }
 }
 
-fn tail(client: impl es::Client) -> impl Stream<Item = Result<es::SSE, es::Error>> {
+fn tail(client: &impl es::Client) -> impl Stream<Item = Result<es::SSE, es::Error>> {
     client.stream()
 }
