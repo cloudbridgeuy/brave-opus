@@ -11,34 +11,15 @@
 //! flags in the [Options](struct.Options.html) struct.
 
 pub mod apis;
-use std::fmt::{self, Display, Formatter};
 
 pub use apis::*;
 pub mod anthropic;
 pub use anthropic::*;
-mod error;
-mod requests;
+
+pub mod error;
+pub mod requests;
 
 use log as _;
 
 pub type Json = serde_json::Value;
-pub type ApiResult<T> = Result<T, Error>;
-
-
-
-#[derive(Debug)]
-pub enum Error {
-    /// An Error returned by the API
-    ApiError(String),
-    /// An Error not related to the API
-    RequestError(String),
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ApiError(s) => write!(f, "API Error: {s}"),
-            Self::RequestError(s) => write!(f, "Request Error: {s}"),
-        }
-    }
-}
+pub type ApiResult<T> = Result<T, error::Error>;

@@ -3,7 +3,7 @@ use futures::stream::Stream;
 use std::time::Duration;
 
 use crate::anthropic::Anthropic;
-use crate::{ApiResult, Error, Json};
+use crate::{error::Error, ApiResult, Json};
 
 #[cfg(not(test))]
 use log::{debug, error, info};
@@ -43,11 +43,7 @@ impl Requests for Anthropic {
             .header("anthropic-version", "2023-06-01")?
             .header("anthropic-beta", "messages-2023-12-15")?
             .header("content-type", "application/json")?
-            .header(
-                "x-api-key",
-                &std::env::var("ANTHROPIC_API_KEY")
-                    .map_err(|_| es::Error::InvalidParameter("Missing ANTHROPIC_API_KEY".into()))?,
-            )?
+            .header("x-api-key", &self.auth.api_key)?
             .method("POST".into())
             .body(body.to_string())
             .reconnect(

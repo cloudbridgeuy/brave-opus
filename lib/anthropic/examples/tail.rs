@@ -8,7 +8,8 @@ pub struct Streamer {
 }
 
 impl Streamer {
-    #[must_use] pub fn new(api_url: String) -> Self {
+    #[must_use]
+    pub fn new(api_url: String) -> Self {
         Self { api_url }
     }
 
@@ -59,7 +60,10 @@ impl Streamer {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), es::Error> {
+async fn main() -> color_eyre::eyre::Result<()> {
+    color_eyre::install()?;
+    env_logger::init();
+
     let streamer = Streamer::new("https://api.anthropic.com/v1/".to_string());
 
     let mut stream = streamer.stream("messages")?;
