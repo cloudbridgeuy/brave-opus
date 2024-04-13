@@ -1,133 +1,104 @@
-# Sessionizer: A CLI Tool for Tmux Session Management
+# anthropic-rs
 
-Sessionizer is a powerful command-line interface (CLI) tool designed to manage `tmux` sessions dynamically based on filesystem rules. It leverages a configuration file to define directories and session rules, and integrates with `fzf` for interactive selection, enhancing your workflow with `tmux`.
+[![Crates.io](https://img.shields.io/crates/v/anthropic-rs.svg)](https://crates.io/crates/anthropic-rs)
+[![Docs.rs](https://docs.rs/anthropic-rs/badge.svg)](https://docs.rs/anthropic-rs)
+
+`anthropic-rs` is a Rust library that simplifies the process of interacting with Anthropic's Claude API. It provides an easy-to-use interface for sending chat messages and receiving responses, with support for streaming responses.
 
 ## Features
 
-- **Dynamic Session Management**: Create and manage `tmux` sessions based on predefined directory rules.
-- **Interactive Selection**: Utilize `fzf` for interactive session and directory selection.
-- **Configuration Flexibility**: Define your session rules and directories through a YAML configuration file.
+- Send chat messages to the Claude API
+- Receive responses from the API
+- Support for streaming responses
+- Configurable authentication using API keys
+- Error handling and detailed error messages
 
 ## Installation
 
-Before you can use Sessionizer, ensure you have `tmux` and `fzf`, and `Rust` installed on your system as prerequisites.
+Add the following to your `Cargo.toml` file:
 
-1. **Install Tmux**: Follow the installation instructions for your operating system.
-2. **Install Fzf**: Refer to the [official Fzf repository](https://github.com/junegunn/fzf) for installation guidelines.
-3. **Install Rust**: Install Rust and Cargo using [rustup](https://rustup.rs/).
-
-After setting up the prerequisites, clone the Sessionizer repository and build it using Cargo:
-
-```sh
-git clone https://example.com/sessionizer.git
-cd sessionizer
-cargo build --release
+```toml
+[dependencies]
+anthropic-rs = "0.1.0"
 ```
-
-## Configuration
-
-Sessionizer relies on a YAML configuration file to define its behavior. Here's a sample configuration:
-
-```yaml
-directories:
-  - id: "unique-id-1"
-    path: "/path/to/directory"
-    mindepth: 1
-    maxdepth: 1
-    grep: ".*"
-sessions:
-  - "session-name-1"
-env:
-  - "VAR=value"
-```
-
-- **directories**: Defines the directories to be included or excluded from session management.
-- **sessions**: Lists previously managed sessions.
-- **env**: Specifies environment variables to be set in sessions.
 
 ## Usage
 
-After configuring Sessionizer, you can manage your `tmux` sessions using the following commands:
+### Authentication
 
-### Initialize Configuration
+To use the library, you need to provide your Anthropic API key. You can create an `Auth` instance using the `Auth::new` method:
 
-To create a new configuration file or overwrite an existing one:
+```rust
+use anthropic_rs::Auth;
 
-```sh
-sessionizer config init [--force]
+let auth = Auth::new("your_api_key_here");
 ```
 
-### Edit Configuration
+Alternatively, you can load the API key from an environment variable using `Auth::from_env`:
 
-To open the configuration file in your default editor:
+```rust
+use anthropic_rs::Auth;
 
-```sh
-sessionizer config edit
+let auth = Auth::from_env().expect("Failed to load API key from environment");
 ```
 
-### Print Configuration
+### Creating an Anthropic Instance
 
-To display the current configuration:
+Once you have an `Auth` instance, you can create an `Anthropic` instance using the `Anthropic::new` method:
 
-```sh
-sessionizer config print
+```rust
+use anthropic_rs::{Anthropic, Auth};
+
+let auth = Auth::new("your_api_key_here");
+let api_url = "https://api.anthropic.com";
+let anthropic = Anthropic::new(auth, api_url);
 ```
 
-### Add a Directory
+### Sending Chat Messages
 
-To add a new directory for session management:
+To send a chat message and receive a response, you can use the `post` method:
 
-```sh
-sessionizer directories add --path "/path/to/directory" [--mindepth 1] [--maxdepth 1] [--grep ".*"]
+```rust
+use anthropic_rs::{Anthropic, Auth, Json};
+
+let auth = Auth::new("your_api_key_here");
+let anthropic = Anthropic::new(auth, "https://api.anthropic.com");
+
+let body = Json::from_str(r#"{"prompt": "Hello, Claude!"}"#).unwrap();
+let response = anthropic.post("/v1/chat", body).unwrap();
+println!("Response: {}", response);
 ```
 
-### Remove a Directory
+### Streaming Responses
 
-To remove a directory from session management:
+To receive streaming responses, you can use the `stream` method:
 
-```sh
-sessionizer directories remove --id "unique-id"
+```rust
+use anthropic_rs::{Anthropic, Auth, Json};
+use futures::StreamExt;
+
+let auth = Auth::new("your_api_key_here");
+let anthropic = Anthropic::new(auth, "https://api.anthropic.com");
+
+let body = Json::from_str(r#"{"prompt": "Tell me a story.", "stream": true}"#).unwrap();
+let mut stream = anthropic.stream("/v1/chat", body).unwrap();
+
+while let Some(event) = stream.next().await {
+    match event {
+        Ok(event) => println!("Received event: {:?}", event),
+        Err(err) => eprintln!("Error: {}", err),
+    }
+}
 ```
 
-### List Directories
+## Error Handling
 
-To list all configured directories:
+The library defines a custom `Error` enum that represents various error conditions that can occur when interacting with the API. The `Error` type implements the `std::error::Error` trait, allowing it to be used with the `?` operator for easy error propagation.
 
-```sh
-sessionizer directories list
-```
+## Examples
 
-### Evaluate Directories
-
-To evaluate and list directories based on the current configuration:
-
-```sh
-sessionizer directories evaluate
-```
-
-### Sessions Management
-
-Sessionizer allows you to create, manage, and switch between `tmux` sessions based on your configured directories:
-
-- **Create a New Session**: `sessionizer sessions new [--session "session-name"]`
-- **Switch to a Session**: `sessionizer sessions go [--session "session-name"]`
-- **List Session History**: `sessionizer sessions history`
-- **Add a Session to History**: `sessionizer sessions add --session "session-name" [--set]`
-- **Remove a Session**: `sessionizer sessions remove --session "session-name"`
-- **Sync Sessions**: `sessionizer sessions sync [--reverse]`
-
-## Advanced Usage
-
-For more advanced use cases, such as scripting or integration with other tools, refer to the `--help` option for each command to explore all available flags and parameters.
-
-## Contributing
-
-Contributions to Sessionizer are welcome! Whether it's feature requests, bug reports, or pull requests, your input is valuable in making Sessionizer better for everyone.
+For more examples and detailed usage instructions, please refer to the [documentation](https://docs.rs/anthropic-rs).
 
 ## License
 
-Sessionizer is released under the MIT License. See the LICENSE file for more details.
-
----
-
-For more information, visit the [Sessionizer GitHub repository](https://github.com/cloudbridgeuy/sessionizer.git).
+This library is licensed under the [MIT License](LICENSE).
