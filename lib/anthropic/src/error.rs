@@ -29,7 +29,7 @@ pub enum Error {
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Error::*;
+        use Error::{ApiError, Eof, InvalidEvent, InvalidLine, InvalidParameter, RequestError, SseStreamCreation, StreamClosed, TimedOut, UnexpectedEof, Unknown};
 
         match self {
             TimedOut => write!(f, "timed out"),

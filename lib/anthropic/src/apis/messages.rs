@@ -128,11 +128,11 @@ pub struct MessageEvent {
 }
 
 impl MessageEvent {
-    pub fn new(r#type: MessageEventType) -> Self {
+    #[must_use] pub fn new(r#type: MessageEventType) -> Self {
         Self { r#type, ..Default::default() }
     }
 
-    pub fn with_comment(comment: String) -> Self {
+    #[must_use] pub fn with_comment(comment: String) -> Self {
         Self { r#type: MessageEventType::Comment, comment: Some(comment), ..Default::default() }
     }
 }
@@ -210,7 +210,7 @@ impl MessageApi for Anthropic {
             item.map(|event| match event {
                 es::SSE::Event(ev) => match serde_json::from_str::<MessageEvent>(&ev.data) {
                     Ok(ev) => {
-                        if let MessageEventType::ContentBlockDelta = ev.r#type {
+                        if matches!(ev.r#type, MessageEventType::ContentBlockDelta) {
                             if let Some(delta) = ev.delta {
                                 if let Some(text) = delta.text {
                                     text
