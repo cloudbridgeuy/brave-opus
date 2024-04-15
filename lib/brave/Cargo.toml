@@ -1,0 +1,19 @@
+[package]
+name = "brave"
+version = "0.1.0"
+description = "A very simple Rust library for Brave's Search API, free from complex async operations and redundant dependencies."
+license = "MIT"
+repository = "https://github.com/cloudbridgeuy/brave-opus/tree/main/lib/brave"
+edition = "2021"
+keywords = ["brave", "api", "search"]
+
+[dependencies]
+ureq = { version = "2.9.6", features = ["json"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+log = "0.4.21"
+env_logger = "0.11.3"
+futures = "0.3.30"
+
+[dev-dependencies]
+color-eyre = "0.6.3"
