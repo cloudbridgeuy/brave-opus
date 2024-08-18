@@ -1,3 +1,5 @@
+use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+
 use crate::brave::Brave;
 use crate::error;
 use crate::{error::Error, ApiResult, Json};
@@ -8,24 +10,30 @@ use log::{debug, error, info};
 #[cfg(test)]
 use std::{eprintln as error, println as info, println as debug};
 
-pub trait Requests {
+pub trait Summarize {
     /// # Errors
     ///
     /// Will return `Err` if the GET request fails, or we are unable to deserialize the response.
-    fn query(&self, sub_url: &str, query_pairs: Option<Vec<(&str, &str)>>) -> ApiResult<Json>;
+    fn summarize_request(&self, sub_url: &str, key: &str) -> ApiResult<Json>;
 }
 
-impl Requests for Brave {
-    fn query(&self, sub_url: &str, query_pairs: Option<Vec<(&str, &str)>>) -> ApiResult<Json> {
-        info!("===> 🚀\n\tGet api: {sub_url}");
+impl Summarize for Brave {
+    fn summarize_request(&self, sub_url: &str, key: &str) -> ApiResult<Json> {
+        let path = &format!(
+            "{}/{}?key={}&entity_info=1",
+            self.api_url,
+            sub_url,
+            utf8_percent_encode(key, NON_ALPHANUMERIC)
+        );
+        info!("GET {path}");
 
         let response = self
             .agent
-            .get(&format!("{}/{}", self.api_url, sub_url))
+            .get(path)
             .set("content-type", "application/json")
             .set("accept-encoding", "gzip")
             .set("x-subscription-token", &self.auth.subscription_token)
-            .query_pairs(query_pairs.unwrap_or_default())
+            .query_pairs([("key", key), ("entity_info", "1")])
             .call();
 
         deal_response(response, sub_url)

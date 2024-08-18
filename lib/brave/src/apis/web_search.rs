@@ -2,23 +2,24 @@
 
 //! Web Search API
 
-use crate::requests::Requests;
+use crate::search::Search;
 use crate::{error, ApiResult, Brave, WebSearchApiResponse, WebSearchParams};
 
 use super::WEB_SEARCH;
 
-pub trait WebSearchApi {
+pub trait Api {
     /// # Errors
     ///
     /// Will return `Err` if the POST request fails for some reason.
     fn search(&self, params: &WebSearchParams) -> ApiResult<WebSearchApiResponse>;
 }
 
-impl WebSearchApi for Brave {
+impl Api for Brave {
     fn search(&self, params: &WebSearchParams) -> ApiResult<WebSearchApiResponse> {
-        let res = self.query(
+        let query_params = params.to_query_params();
+        let res = self.search_request(
             WEB_SEARCH,
-            Some(params.to_query_params().iter().map(|(k, v)| (k.as_ref(), v.as_ref())).collect()),
+            Some(query_params.iter().map(|(k, v)| (k.as_ref(), v.as_ref())).collect()),
         )?;
         let response: WebSearchApiResponse =
             serde_json::from_value(res).map_err(error::Error::DeserializeError)?;

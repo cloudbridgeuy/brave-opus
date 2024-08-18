@@ -1,5 +1,5 @@
 use brave::{
-    apis::{web_search::WebSearchApi, WebSearchParams},
+    apis::{web_search::Api, WebSearchParams},
     Brave,
 };
 
@@ -12,19 +12,9 @@ fn main() -> color_eyre::eyre::Result<()> {
     let client = Brave::new(brave::Auth::new(&key), "https://api.search.brave.com/res/v1");
 
     let params = WebSearchParams::new("capital of the United States");
-    let response = client.search(&params);
+    let response = client.search(&params)?;
 
-    println!("{:#?}", response);
-    //
-    // let body = MessageBody::with_stream("claude-3-opus-20240229", messages, 100);
-    //
-    // // let mut stream = client.message_stream(&body)?;
-    // let mut stream = client.message_delta_stream(&body)?;
-    //
-    // while let Ok(Some(text)) = stream.try_next().await {
-    //     print!("{text}");
-    //     std::io::stdout().flush()?;
-    // }
+    println!("{}", serde_json::to_string_pretty(&response)?);
 
     Ok(())
 }

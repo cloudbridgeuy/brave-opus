@@ -26,3 +26,6 @@ env_logger = "0.11.3"
 log = "0.4.21"
 ctrlc = { version = "3.4.4", features = ["termination"] }
 eventsource-client = "0.12.2"
+html2text = "0.12.4"
+ureq = { version = "2.9.6", features = ["json"] }
+futures = "0.3.30"

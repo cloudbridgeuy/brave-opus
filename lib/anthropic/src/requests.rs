@@ -40,6 +40,10 @@ impl Requests for Anthropic {
         let response = self
             .agent
             .post(&(self.api_url.clone() + sub_url))
+            .set(
+                "anthropic-version",
+                &self.auth.version.clone().unwrap_or("2023-06-01".to_string()),
+            )
             .set("content-type", "application/json")
             .set("x-api-key", &self.auth.api_key)
             .send_json(body);

@@ -5,7 +5,8 @@ pub mod brave;
 pub use brave::*;
 
 pub mod error;
-pub mod requests;
+pub mod search;
+pub mod summarize;
 
 use log as _;
 
