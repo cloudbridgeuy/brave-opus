@@ -31,6 +31,7 @@ impl Api for Brave {
             let key = summarizer.key;
             let res = self.summarize_request(SUMMARIZER, &key)?;
 
+            log::debug!("Summarizer response: {:#?}", res);
             Ok(serde_json::from_value(res).map_err(error::Error::DeserializeError)?)
         } else {
             Err(error::Error::ApiError("No summarizer found".to_string()))

@@ -1,6 +1,9 @@
+use serde::de::{self, MapAccess, Visitor};
 use std::collections::HashMap;
+use std::fmt;
 
-use serde::{self, Deserialize, Serialize};
+use serde::{self, Deserialize, Deserializer, Serialize};
+use std::result::Result as StdResult;
 
 pub mod summarizer;
 pub mod web_search;
@@ -1640,31 +1643,68 @@ pub struct ReferenceSource {
 /// rate limit events. Access to Summarizer requires a subscription to Pro AI plan.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SummarizerSearchApiResponse {
+    /// The type of summarizer search API result. The value is always `summarizer`.
+    pub r#type: String,
     /// The current status of summarizer for the given key. The value can be either failed or
     /// complete.
     pub status: String,
     /// Summarizer search results relevant to the query key. Available in API version `2023-08-25`.
     /// This version is now deprecated.
-    pub results: Vec<SummarizerResult>,
+    pub results: Option<Vec<SummarizerResult>>,
     /// The title for the summary. Available from API version `2024-04-23` onwards.
     pub title: Option<String>,
     /// Details for the summary message. Available from API version `2024-04-23 onwards.
-    pub summary: Vec<SummaryMessage>,
+    pub summary: Option<Vec<SummaryMessage>>,
     /// Enrichments that can be added to the summary message. Available from API version
     /// `2024-04-23` onwards.
-    pub enrichments: SummaryEnrichments,
+    pub enrichments: Option<SummaryEnrichments>,
     /// Followup queries relevant to the current query. Available from API version `2024-04-23`
     /// onwards.
-    pub followups: Vec<String>,
+    pub followups: Option<Vec<String>>,
     /// Details on the entities in the summary message. Available from API version `2024-04-23`
     /// onwards.
-    pub entities_info: HashMap<String, SummaryEntityInfo>,
+    pub entities_info: Option<HashMap<String, SummaryEntityInfo>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub enum StringOrSummaryEntity {
     String(String),
     SummaryEntity(SummaryEntity),
+}
+
+impl<'de> Deserialize<'de> for StringOrSummaryEntity {
+    fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct StringOrSummaryEntityVisitor;
+
+        impl<'de> Visitor<'de> for StringOrSummaryEntityVisitor {
+            type Value = StringOrSummaryEntity;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a string or a SummaryEntity")
+            }
+
+            fn visit_str<E>(self, value: &str) -> StdResult<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(StringOrSummaryEntity::String(value.to_owned()))
+            }
+
+            fn visit_map<M>(self, map: M) -> StdResult<Self::Value, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                let entity =
+                    SummaryEntity::deserialize(de::value::MapAccessDeserializer::new(map))?;
+                Ok(StringOrSummaryEntity::SummaryEntity(entity))
+            }
+        }
+
+        deserializer.deserialize_any(StringOrSummaryEntityVisitor)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1684,9 +1724,9 @@ pub struct SummaryEntity {
     /// A text message describing the entity.
     pub text: Option<String>,
     /// The image associated with the entity.
-    pub images: Vec<SummaryImage>,
+    pub images: Option<Vec<SummaryImage>>,
     /// The location of the entity in the summary message.
-    pub highlight: Vec<TextLocation>,
+    pub highlight: Option<Vec<TextLocation>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1700,7 +1740,7 @@ pub struct SummaryMessage {
     /// be ol or ul, which means an ordered list or an unordered list of entities follows
     /// respectively. For type enum_end there is no value. For type token the value is a text
     /// excerpt. For type enum_item the value is the SummaryEntity response model.
-    pub data: StringOrSummaryEntity,
+    pub data: Option<StringOrSummaryEntity>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1717,24 +1757,24 @@ pub struct SummaryEnrichments {
     /// The raw summary message.
     pub raw: String,
     /// The images associated with the summary.
-    pub images: Vec<SummaryImage>,
+    pub images: Option<Vec<SummaryImage>>,
     /// The answers in the summary message.
-    pub qa: Vec<SummaryAnswer>,
+    pub qa: Option<Vec<SummaryAnswer>>,
     /// The entities in the summary message.
-    pub entities: Vec<SummaryEntity>,
+    pub entities: Option<Vec<SummaryEntity>>,
     /// References based on which the summary was built.
-    pub context: Vec<SummaryContext>,
+    pub context: Option<Vec<SummaryContext>>,
 }
 
 /// The answer if the query is a question.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SummaryAnswer {
     /// The answer text.
-    answer: String,
+    answer: Option<String>,
     /// A score associated with the answer.
-    score: f32,
+    score: Option<f32>,
     /// The location of the answer in the summary message.
-    highlight: TextLocation,
+    highlight: Option<TextLocation>,
 }
 
 /// A reference for the summary.

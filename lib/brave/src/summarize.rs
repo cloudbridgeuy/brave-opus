@@ -36,6 +36,8 @@ impl Summarize for Brave {
             .query_pairs([("key", key), ("entity_info", "1")])
             .call();
 
+        debug!("Summarizer response: {:#?}", response);
+
         deal_response(response, sub_url)
     }
 }
