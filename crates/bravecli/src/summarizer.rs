@@ -166,10 +166,7 @@ impl From<Cli> for WebSearchParams {
     }
 }
 
-pub fn run(mut cli: Cli, subscription_token: &str) -> Result<()> {
-    let client =
-        Brave::new(brave::Auth::new(subscription_token), "https://api.search.brave.com/res/v1");
-
+pub fn run(mut cli: Cli, client: Brave) -> Result<()> {
     let version = cli.version.take();
     let params: WebSearchParams = cli.into();
 
