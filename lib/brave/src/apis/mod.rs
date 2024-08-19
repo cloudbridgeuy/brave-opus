@@ -5,6 +5,7 @@ use std::fmt;
 use serde::{self, Deserialize, Deserializer, Serialize};
 use std::result::Result as StdResult;
 
+pub mod suggest;
 pub mod summarizer;
 pub mod web_search;
 
@@ -1788,7 +1789,96 @@ pub struct SummaryContext {
     meta_url: MetaUrl,
 }
 
+/// Parameters supported by the Suggest Search API.
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct SuggestSearchParams {
+    /// The user's search query term.
+    ///
+    /// Maximum 400 characters and 50 words in the query.
+    pub q: String,
+
+    /// The search query country.
+    ///
+    /// The country string is limited to 2 character country code of supported countries. For a list
+    /// of supported values, see [Country
+    /// Codes](https://api.search.brave.com/app/documentation/web-search/codes#country-codes)
+    pub country: Option<String>,
+
+    /// The search language preference.
+    ///
+    /// The 2 or more character language code for which the suggest search results are provided.
+    /// This is just a hint for calculating suggest responses. For a list of complete values, see [Language
+    /// Codes.](https://api.search.brave.com/app/documentation/web-search/codes#language-codes)
+    pub lang: Option<String>,
+
+    // The number of suggestions returned. This is done as best effort. The maximum is 20.
+    pub count: Option<u16>,
+
+    /// Whether to enhance suggestions with rich results. This is an extra option in plans which
+    /// needs to be enabled.
+    pub rich: Option<String>,
+}
+
+impl SuggestSearchParams {
+    #[must_use]
+    pub fn new(q: &str) -> Self {
+        Self { q: q.to_string(), ..Default::default() }
+    }
+
+    #[must_use]
+    pub fn to_query_params(&self) -> Vec<(String, String)> {
+        let mut params = Vec::new();
+
+        // `q` is mandatory, so we add it directly.
+        params.push(("q".to_string(), self.q.clone()));
+
+        if let Some(ref country) = self.country {
+            params.push(("country".to_string(), country.clone()));
+        }
+        if let Some(ref lang) = self.lang {
+            params.push(("lang".to_string(), lang.clone()));
+        }
+        if let Some(count) = self.count {
+            params.push(("count".to_string(), count.to_string()));
+        }
+        if let Some(ref rich) = self.rich {
+            params.push(("rich".to_string(), rich.to_string()));
+        }
+
+        params
+    }
+}
+
+/// Top level response model for successful Suggest API requests. The API can also respond back with
+/// an error response based on invalid subscription keys and rate limit events.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SuggestSearchApiResponse {
+    /// The type of search api result. The value is always suggest.
+    r#type: String,
+    /// Suggest search query string. Only the original query is returned.
+    query: Query,
+    /// The list of suggestions for the given query.
+    results: Vec<SuggestResult>,
+}
+
+/// Suggestions for a query.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SuggestResult {
+    /// Suggested query completion.
+    query: Option<String>,
+    /// Whether the suggested enriched query is an entity.
+    is_entity: Option<bool>,
+    /// The suggested query enriched title
+    title: Option<String>,
+    /// The suggested enriched description.
+    description: Option<String>,
+    /// The suggested query enriched image url.
+    img: Option<String>,
+}
+
 // Brave Web Search API
 const WEB_SEARCH: &str = "web/search";
 // Brave Summarizer API
 const SUMMARIZER: &str = "summarizer/search";
+// Brave Suggest API
+const SUGGEST: &str = "suggest/search";

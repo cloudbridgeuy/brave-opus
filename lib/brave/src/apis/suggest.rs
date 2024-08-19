@@ -1,36 +1,36 @@
-// See: https://api.search.brave.com/app/documentation/web-search/get-started
+// See: https://api.search.brave.com/app/documentation/suggest/get-started
 
-//! Web Search API
+//! Suggest API
 
 use crate::query::Query;
-use crate::{error, ApiResult, Brave, WebSearchApiResponse, WebSearchParams};
+use crate::{error, ApiResult, Brave, SuggestSearchApiResponse, SuggestSearchParams};
 
-use super::WEB_SEARCH;
+use super::SUGGEST;
 
 pub trait Api {
     /// # Errors
     ///
     /// Will return `Err` if the POST request fails for some reason.
-    fn search(
+    fn suggest(
         &self,
-        params: &WebSearchParams,
+        params: &SuggestSearchParams,
         version: Option<&str>,
-    ) -> ApiResult<WebSearchApiResponse>;
+    ) -> ApiResult<SuggestSearchApiResponse>;
 }
 
 impl Api for Brave {
-    fn search(
+    fn suggest(
         &self,
-        params: &WebSearchParams,
+        params: &SuggestSearchParams,
         version: Option<&str>,
-    ) -> ApiResult<WebSearchApiResponse> {
+    ) -> ApiResult<SuggestSearchApiResponse> {
         let query_params = params.to_query_params();
         let res = self.query(
-            WEB_SEARCH,
+            SUGGEST,
             Some(query_params.iter().map(|(k, v)| (k.as_ref(), v.as_ref())).collect()),
             version,
         )?;
-        let response: WebSearchApiResponse =
+        let response: SuggestSearchApiResponse =
             serde_json::from_value(res).map_err(error::Error::DeserializeError)?;
         Ok(response)
     }

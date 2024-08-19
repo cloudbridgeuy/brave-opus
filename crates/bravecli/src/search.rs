@@ -13,6 +13,13 @@ pub struct Cli {
     #[clap(value_parser = crate::value_parsers::q_value_parser)]
     q: String,
 
+    /// Web Search API Version.
+    ///
+    /// The Brave Web Search API version to use. This is denoted by the format `YYYY-MM-DD`. The
+    /// latest version is used by default, and the previous ones can be found in the API Changelog.
+    #[clap(long)]
+    version: Option<String>,
+
     /// The search query country.
     ///
     /// The country string is limited to 2 character country code of supported countries. For a list
@@ -156,13 +163,14 @@ impl From<Cli> for WebSearchParams {
     }
 }
 
-pub fn run(cli: Cli, subscription_token: &str) -> Result<()> {
+pub fn run(mut cli: Cli, subscription_token: &str) -> Result<()> {
     let client =
         Brave::new(brave::Auth::new(subscription_token), "https://api.search.brave.com/res/v1");
 
+    let version = cli.version.take();
     let params: WebSearchParams = cli.into();
 
-    let response = client.search(&params)?;
+    let response = client.search(&params, version.as_deref())?;
     println!("{}", serde_json::to_string_pretty(&response)?);
 
     Ok(())

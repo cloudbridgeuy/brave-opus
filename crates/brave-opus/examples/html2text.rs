@@ -79,7 +79,7 @@ RETURN JUST THREE UPDATED PROMPTS SEPARATED BY A SINGLE NEW LINE WITHOUT QUOTES 
                 params.country = Some("ALL".to_string());
 
                 let mut response: brave::WebSearchApiResponse =
-                    brave_client.search(&params).unwrap();
+                    brave_client.search(&params, None).unwrap();
 
                 let web = response.web.take().ok_or_eyre("can't find `web` in response").unwrap();
 

@@ -12,7 +12,7 @@ fn main() -> color_eyre::eyre::Result<()> {
     let client = Brave::new(brave::Auth::new(&key), "https://api.search.brave.com/res/v1");
 
     let params = WebSearchParams::new("capital of the United States");
-    let response = client.search(&params)?;
+    let response = client.search(&params, None)?;
 
     println!("{}", serde_json::to_string_pretty(&response)?);
 

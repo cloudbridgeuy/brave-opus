@@ -1,42 +1,49 @@
-use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
-
 use crate::brave::Brave;
 use crate::error;
 use crate::{error::Error, ApiResult, Json};
 
 #[cfg(not(test))]
-use log::{debug, error, info};
+use log::{debug, error};
 
 #[cfg(test)]
-use std::{eprintln as error, println as info, println as debug};
+use std::{eprintln as error, println as debug};
 
-pub trait Summarize {
+pub trait Query {
     /// # Errors
     ///
     /// Will return `Err` if the GET request fails, or we are unable to deserialize the response.
-    fn summarize_request(&self, sub_url: &str, key: &str) -> ApiResult<Json>;
+    fn query(
+        &self,
+        sub_url: &str,
+        query_pairs: Option<Vec<(&str, &str)>>,
+        version: Option<&str>,
+    ) -> ApiResult<Json>;
 }
 
-impl Summarize for Brave {
-    fn summarize_request(&self, sub_url: &str, key: &str) -> ApiResult<Json> {
-        let path = &format!(
-            "{}/{}?key={}&entity_info=1",
-            self.api_url,
-            sub_url,
-            utf8_percent_encode(key, NON_ALPHANUMERIC)
-        );
-        info!("GET {path}");
+impl Query for Brave {
+    fn query(
+        &self,
+        sub_url: &str,
+        query_pairs: Option<Vec<(&str, &str)>>,
+        version: Option<&str>,
+    ) -> ApiResult<Json> {
+        let path = &format!("{}/{}", self.api_url, sub_url);
+        let query = query_pairs.unwrap_or_default();
+        let query_string =
+            &query.iter().map(|q| format!("{}={}", q.0, q.1)).collect::<Vec<String>>().join("&");
+        debug!("GET {path}?{query_string}");
 
-        let response = self
+        let mut request = self
             .agent
             .get(path)
             .set("content-type", "application/json")
             .set("accept-encoding", "gzip")
-            .set("x-subscription-token", &self.auth.subscription_token)
-            .query_pairs([("key", key), ("entity_info", "1")])
-            .call();
+            .set("x-subscription-token", &self.auth.subscription_token);
 
-        debug!("Summarizer response: {:#?}", response);
+        request =
+            if let Some(version) = version { request.set("Api-Version", version) } else { request };
+
+        let response = request.query_pairs(query).call();
 
         deal_response(response, sub_url)
     }
