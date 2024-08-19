@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 
 mod search;
 mod suggest;
@@ -58,8 +58,35 @@ pub struct Cli {
     #[clap(long, env = "BRAVE_SUGGEST_API_KEY", global = true, verbatim_doc_comment, hide = true)]
     pub brave_suggest_api_key: Option<String>,
 
+    /// Log level
+    #[clap(long, env = "RUST_LOG", global = true, value_enum)]
+    pub log_level: Option<Verbose>,
+
+    /// Sets the log level to DEBUG
+    #[clap(long, global = true)]
+    pub verbose: bool,
+
     #[command(subcommand)]
     pub command: Commands,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum Verbose {
+    Error,
+    Warning,
+    Info,
+    Debug,
+}
+
+impl From<Verbose> for log::LevelFilter {
+    fn from(v: Verbose) -> Self {
+        match v {
+            Verbose::Error => log::LevelFilter::Error,
+            Verbose::Warning => log::LevelFilter::Warn,
+            Verbose::Info => log::LevelFilter::Info,
+            Verbose::Debug => log::LevelFilter::Debug,
+        }
+    }
 }
 
 #[derive(Debug, Subcommand)]
@@ -81,7 +108,6 @@ pub enum Commands {
 #[tokio::main]
 async fn main() -> color_eyre::eyre::Result<()> {
     color_eyre::install()?;
-    env_logger::init();
 
     ctrlc::set_handler(move || {
         log::error!("Ctrl-C received, stopping the program");
@@ -92,17 +118,26 @@ async fn main() -> color_eyre::eyre::Result<()> {
 }
 
 fn run() -> color_eyre::eyre::Result<()> {
-    log::debug!("Parsing CLI arguments");
     let mut cli = Cli::parse();
 
-    log::debug!("Getting credentials");
+    if cli.verbose {
+        env_logger::builder().filter_level(log::LevelFilter::Debug).init();
+    } else if let Some(log_level) = cli.log_level {
+        env_logger::builder().filter_level(log_level.into()).init();
+    } else {
+        env_logger::init();
+    }
+
+    log::info!("Parsing CLI arguments");
+
+    log::info!("Getting credentials");
     let credentials = Credentials {
         subscription_token: cli.subscription_token.take(),
         brave_web_search_data_for_ai_api_key: cli.brave_web_search_data_for_ai_api_key.take(),
         brave_suggest_api_key: cli.brave_suggest_api_key.take(),
     };
 
-    log::debug!("Running command");
+    log::info!("Running command");
     match cli.command {
         Commands::Search(cli) => {
             crate::search::run(cli, get_client(credentials, Subscription::WebSearch)?)
@@ -131,7 +166,7 @@ fn get_client(
     mut credentials: Credentials,
     subscription: Subscription,
 ) -> color_eyre::eyre::Result<Brave> {
-    log::debug!("Creating Brave Client");
+    log::info!("Creating Brave Client");
 
     let subscription_token = credentials.subscription_token.take();
     let brave_web_search_data_for_ai_api_key =

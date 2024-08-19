@@ -3,10 +3,10 @@ use crate::error;
 use crate::{error::Error, ApiResult, Json};
 
 #[cfg(not(test))]
-use log::{debug, error};
+use log::{debug, error, info};
 
 #[cfg(test)]
-use std::{eprintln as error, println as debug};
+use std::{eprintln as error, println as debug, println as info};
 
 pub trait Query {
     /// # Errors
@@ -31,7 +31,7 @@ impl Query for Brave {
         let query = query_pairs.unwrap_or_default();
         let query_string =
             &query.iter().map(|q| format!("{}={}", q.0, q.1)).collect::<Vec<String>>().join("&");
-        debug!("GET {path}?{query_string}");
+        info!("GET {path}?{query_string}");
 
         let mut request = self
             .agent

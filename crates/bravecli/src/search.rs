@@ -33,7 +33,7 @@ pub struct Cli {
     /// The language code, consisting of two or more characters, for which the search results are
     /// provided. For a list of possible values, see [Language
     /// Codes.](https://api.search.brave.com/app/documentation/web-search/codes#language-codes)
-    #[clap(long = "lang")]
+    #[clap(long)]
     search_lang: Option<String>,
 
     /// User interface language preferred in response.
@@ -41,7 +41,7 @@ pub struct Cli {
     /// Usually in the formmat `<language-code>-<country-code>`, see [RFC
     /// 9110](https://www.rfc-editor.org/rfc/rfc9110.html#name-accept-language) for a list of
     /// supported values.
-    #[clap(long = "ui-lang")]
+    #[clap(long)]
     ui_lang: Option<String>,
 
     /// The number of search results returned in response.
