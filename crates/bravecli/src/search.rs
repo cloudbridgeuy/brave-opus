@@ -48,7 +48,7 @@ pub struct Cli {
     ///
     /// The maximum is 20. The actual number delivered may be less than requested. Combine this
     /// parameter with `offset` to paginate search results.
-    #[clap(long, value_parser = clap::value_parser!(u16).range(1..20))]
+    #[clap(long, value_parser = clap::value_parser!(u16).range(1..21))]
     count: Option<u16>,
 
     /// The zero based offset for search results per page (count) to skip before returning the
@@ -57,7 +57,7 @@ pub struct Cli {
     /// example, if your user interface displays 20 search results per page, set `count` to 20 and
     /// `offset` to `0` to show the first page of results. To get subsequent pages, increment
     /// `offset` by `1` (e.g. `0`, `1`, `2`.) The results may overlap across multiple pages.
-    #[clap(long, value_parser = clap::value_parser!(u16).range(1..9))]
+    #[clap(long, value_parser = clap::value_parser!(u16).range(1..10))]
     offset: Option<u16>,
 
     /// Filters search results for adult content.

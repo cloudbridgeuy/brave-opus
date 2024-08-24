@@ -445,7 +445,7 @@ pub struct Search {
 #[derive(Debug, Serialize, Deserialize)]
 /// Aggregated information on a web search result, relevant to the query.
 pub struct SearchResult {
-    /// A type identifying a web search result. The value is always search_result.
+    /// A type identifying a web search result. The value is always `search_result`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// A sub type identifying the web search result type.
@@ -499,7 +499,7 @@ pub struct SearchResult {
     /// A list of products and reviews that are found on the web search result page.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub product_cluster: Option<Vec<ProductReview>>,
-    /// A type representing a cluster. The value can be product_cluster.
+    /// A type representing a cluster. The value can be `product_cluster`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cluster_type: Option<String>,
     /// A list of web search results.
@@ -712,7 +712,7 @@ pub struct Thumbnail {
 /// A result that is location relevant.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LocationResult {
-    /// Location result type identifier. The value is always location_result.
+    /// Location result type identifier. The value is always `location_result`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// The complete url of the provider.
@@ -874,7 +874,7 @@ pub struct Action {
 /// A model representing a postal address of a location
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostalAddress {
-    /// The type identifying a postal address. The value is always PostalAddress.
+    /// The type identifying a postal address. The value is always `PostalAddress`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// The country associated with the location.
@@ -1132,7 +1132,7 @@ pub struct Article {
 /// A way to contact an entity.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ContactPoint {
-    /// A type string identifying a contact point. The value is always contact_point.
+    /// A type string identifying a contact point. The value is always `contact_point`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// The telephone number of the entity.
@@ -1419,7 +1419,7 @@ pub struct DeepResult {
 /// A model representing a video result.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VideoResult {
-    /// The type identifying the video result. The value is always video_result.
+    /// The type identifying the video result. The value is always `video_result`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// Meta data for the video.
@@ -1459,7 +1459,7 @@ pub struct VideoData {
 /// A result which can be used as a button.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ButtonResult {
-    /// A type identifying button result. The value is always button_result.
+    /// A type identifying button result. The value is always `button_result`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// The title of the result.
@@ -1583,7 +1583,7 @@ pub struct ImageProperties {
 /// A result from the summarizer.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SummarizerResult {
-    /// The type of summarizer search api result. The value is always summarizer_result.
+    /// The type of summarizer search api result. The value is always `summarizer_result`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub r#type: Option<String>,
     /// The summarized content and answer relevant to the query.
@@ -1733,14 +1733,14 @@ pub struct SummaryEntity {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SummaryMessage {
     /// The type of subset of a summary message. The value can be token (a text excerpt from the
-    /// summary), enum_item (a summary entity), enum_start (describes the beginning of summary
+    /// summary), `enum_item` (a summary entity), `enum_start` (describes the beginning of summary
     /// entities, which means the following item(s) in the summary list will be entities), or
-    /// enum_end (the end of summary entities).
+    /// `enum_end` (the end of summary entities).
     pub r#type: String,
-    /// The summary entity or the explanation for the type field. For type enum_start the value can
+    /// The summary entity or the explanation for the type field. For type `enum_start` the value can
     /// be ol or ul, which means an ordered list or an unordered list of entities follows
-    /// respectively. For type enum_end there is no value. For type token the value is a text
-    /// excerpt. For type enum_item the value is the SummaryEntity response model.
+    /// respectively. For type `enum_end` there is no value. For type token the value is a text
+    /// excerpt. For type `enum_item` the value is the `SummaryEntity` response model.
     pub data: Option<StringOrSummaryEntity>,
 }
 
